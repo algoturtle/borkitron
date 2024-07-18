@@ -103,7 +103,7 @@ between the player and the coins. The key part there is to set a function that w
       .setOrigin(0.5);
 
     this.add
-      .bitmapText(this.center_width, 25, "arcade", "The Gravitron", 40)
+      .bitmapText(this.center_width, 25, "arcade", "Gravity Gauntlet", 40)
       .setOrigin(0.5);
 
     this.timerText = this.add
