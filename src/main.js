@@ -6,7 +6,7 @@ This is the main configuration file for the game.
 */
 const config = {
   width: 800,
-  height: 400,
+  height: 800,
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
@@ -17,7 +17,8 @@ const config = {
     default: "arcade",
     arcade: {
       gravity: { y: 0 },
-      //debug: true,
+      fps: 300,
+      debug: false,
     },
   },
   scene: [Game, GameOver],
