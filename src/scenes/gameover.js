@@ -6,7 +6,7 @@ export default class GameOver extends Phaser.Scene {
   }
 
   create() {
-    this.retryable = this.registry.get("endless");
+    this.retryable = !this.registry.get("arcade");
     this.width = this.sys.game.config.width;
     this.height = this.sys.game.config.height;
     this.center_width = this.width / 2;
