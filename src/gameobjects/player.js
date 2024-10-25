@@ -30,6 +30,10 @@ class Player extends Phaser.GameObjects.Sprite {
       onComplete: null,
     });
 
+    this.animate()
+  }
+
+  animate() {
     this.scene.anims.create({
       key: "player",
       frames: this.scene.anims.generateFrameNumbers("player", {

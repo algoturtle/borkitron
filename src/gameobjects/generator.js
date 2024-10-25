@@ -2,6 +2,7 @@ export default class Generator {
   constructor(scene) {
     this.scene = scene;
     this.scene.time.delayedCall(5000, () => this.init(), null, this);
+    this.rand = new Phaser.Math.RandomDataGenerator([scene.seed]);
     this.generateStars();
     this.generateBounds();
     this.generateArrows();
@@ -43,7 +44,7 @@ export default class Generator {
       new Enemy(
         this.scene,
         enemyX,
-        Phaser.Math.Between(
+        this.rand.between(
           this.scene.worldTop + 30,
           this.scene.worldBottom - 30
         )
@@ -143,7 +144,7 @@ class Enemy extends Phaser.GameObjects.Sprite {
     scene.add.existing(this);
     scene.physics.add.existing(this);
     this.body.setAllowGravity(false);
-    this.setScale(0.6);
+    scene.glizzy ? this.setScale(1.75) : this.setScale(0.6);
     this.leftPause = this.displayWidth / 2;
     this.rightPause = scene.width - this.leftPause;
     this.direction = x < scene.center_width ? 1 : -1
@@ -162,6 +163,7 @@ class Enemy extends Phaser.GameObjects.Sprite {
       onComplete: null,
     });
     this.scene.time.delayedCall(700, () => this.animate(), null, this);
+    if (this.direction === -1) { this.setFlipX(true) }
   }
 
   animate() {
