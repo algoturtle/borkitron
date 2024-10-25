@@ -1,6 +1,9 @@
 import Player from "../gameobjects/player";
 import Generator from "../gameobjects/generator";
 
+const queryString = window.location.search;
+const urlParams = new URLSearchParams(queryString);
+
 export default class Game extends Phaser.Scene {
   constructor() {
     super({ key: "game" });
@@ -15,14 +18,30 @@ export default class Game extends Phaser.Scene {
     this.stars = true;
     this.velocityX = 0;
 
+    // Endless vs arcade mode
+    this.endless = urlParams.get("endless") != null;
+
     // Modify these for traits
     this.extraLife = false;
     this.easy = false;
+
+    // Seed for enemy randomness
+    this.seed = urlParams.get("seed") || Date.now;
+
+    // Glizzy mode
+    this.glizzy = urlParams.get("glizzy") != null;
   }
 
   init(data) {
     this.name = data.name;
     this.number = data.number;
+
+    this.score = -5;
+    this.lives = 3;
+    this.velocityX = 0;
+    this.movingLeft = false;
+    this.movingRight = false;
+    this.pointerDown = false;
   }
 
   /*
@@ -30,7 +49,9 @@ export default class Game extends Phaser.Scene {
     We also set the score to 0 in the registry, so we can access it from other scenes.
     */
   preload() {
-    this.registry.set("score", 0);
+    this.registry.set("endless", this.endless);
+    this.registry.set("score", this.score);
+    this.registry.set("lives", this.lives);
     this.load.bitmapFont(
       "arcade",
       "assets/fonts/arcade.png",
@@ -40,23 +61,22 @@ export default class Game extends Phaser.Scene {
       frameWidth: 64,
       frameHeight: 72,
     });
-    this.load.spritesheet("enemy", "./assets/images/enemy.png", {
-      frameWidth: 70,
-      frameHeight: 70,
-    });
     this.load.spritesheet("arrow", "./assets/images/arrow.png", {
       frameWidth: 62,
       frameHeight: 65,
     });
 
-    this.score = -5;
-    this.lives = 3;
-    this.stars = true;
-    this.hardStars = true;
-    this.velocityX = 0;
-    this.movingLeft = false;
-    this.movingRight = false;
-    this.pointerDown = false;
+    if (this.glizzy) {
+      this.load.spritesheet("enemy", "./assets/images/glizzy.png", {
+        frameWidth: 32,
+        frameHeight: 32,
+      });
+    } else {
+      this.load.spritesheet("enemy", "./assets/images/enemy.png", {
+        frameWidth: 70,
+        frameHeight: 70,
+      });
+    }
   }
 
   /*
@@ -102,9 +122,16 @@ between the player and the coins. The key part there is to set a function that w
       )
       .setOrigin(0.5);
 
-    this.add
-      .bitmapText(this.center_width, 25, "arcade", "Gravity Gauntlet", 40)
-      .setOrigin(0.5);
+    if (this.glizzy) {
+      this.add
+        .bitmapText(this.center_width, 25, "arcade", "Glizzy Gauntlet", 40)
+        .setOrigin(0.5);
+    } else {
+      this.add
+        .bitmapText(this.center_width, 25, "arcade", "Gravity Gauntlet", 40)
+        .setOrigin(0.5);
+    }
+
 
     this.timerText = this.add
       .bitmapText(
@@ -116,15 +143,28 @@ between the player and the coins. The key part there is to set a function that w
       )
       .setOrigin(0.5);
 
-    this.message = this.add
-      .bitmapText(
-        this.center_width,
-        (this.height / 16) * 10,
-        "arcade",
-        "Avoid the enemies!",
-        25
-      )
-      .setOrigin(0.5);
+    if (this.glizzy) {
+      this.message = this.add
+        .bitmapText(
+          this.center_width,
+          (this.height / 16) * 10,
+          "arcade",
+          "Avoid the glizzies!",
+          25
+        )
+        .setOrigin(0.5);
+    } else {
+      this.message = this.add
+        .bitmapText(
+          this.center_width,
+          (this.height / 16) * 10,
+          "arcade",
+          "Avoid the enemies!",
+          25
+        )
+        .setOrigin(0.5);
+    }
+
     this.subMessage = this.add
       .bitmapText(
         this.center_width,
@@ -175,7 +215,11 @@ And obviously, we finish the scene.
     this.updateLives();
 
     if (this.lives === 2) {
-      this.message.setText("I said AVOID the enemies!");
+      if (this.glizzy) {
+        this.message.setText("I said AVOID the glizzies!");
+      } else {
+        this.message.setText("I said AVOID the enemies!");
+      }
     }
 
     if (this.lives === 1) {
@@ -283,6 +327,7 @@ What should we do when we finish the game scene?
   finishScene() {
     this.stopX();
     this.registry.set("score", this.score);
+    this.registry.set("lives", this.lives);
     this.scene.start("gameover");
   }
 
@@ -291,6 +336,8 @@ This method is called every 100ms and it is used to update the score and show it
 */
   updateScore() {
     this.score ++;
+
+    if (this.score === 30 && !this.endless) { this.finishScene() }
 
     switch (this.score) {
       case 5:

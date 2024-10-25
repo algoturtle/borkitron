@@ -3,17 +3,16 @@ import Player from "../gameobjects/player";
 export default class GameOver extends Phaser.Scene {
   constructor() {
     super({ key: "gameover" });
-    this.retryable = true
   }
 
   create() {
+    this.retryable = this.registry.get("endless");
     this.width = this.sys.game.config.width;
     this.height = this.sys.game.config.height;
     this.center_width = this.width / 2;
     this.center_height = this.height / 2;
     this.cameras.main.setBackgroundColor(0x000000);
     this.player = new Player(this, this.center_width, this.height / 8 * 3);
-    this.player.spin();
 
     this.add
       .bitmapText(
@@ -24,15 +23,30 @@ export default class GameOver extends Phaser.Scene {
         25
       )
       .setOrigin(0.5);
-    this.add
-      .bitmapText(
-        this.center_width,
-        this.center_height,
-        "arcade",
-        "GAME OVER",
-        45
-      )
-      .setOrigin(0.5);
+
+    if (this.registry.get('lives') > 0) {
+      this.player.animate();
+      this.add
+        .bitmapText(
+          this.center_width,
+          this.center_height,
+          "arcade",
+          "YOU WIN",
+          45
+        )
+        .setOrigin(0.5);
+    } else {
+      this.player.spin();
+      this.add
+        .bitmapText(
+          this.center_width,
+          this.center_height,
+          "arcade",
+          "GAME OVER",
+          45
+        )
+        .setOrigin(0.5);
+    }
 
     if (this.retryable) {
       this.time.delayedCall(1000, () => this.showRestart(), null, this);
