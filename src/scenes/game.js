@@ -19,7 +19,7 @@ export default class Game extends Phaser.Scene {
     this.velocityX = 0;
 
     // Endless vs arcade mode
-    this.endless = urlParams.get("endless") != null;
+    this.arcade = urlParams.get("arcade") != null;
 
     // Modify these for traits
     this.extraLife = false;
@@ -49,7 +49,7 @@ export default class Game extends Phaser.Scene {
     We also set the score to 0 in the registry, so we can access it from other scenes.
     */
   preload() {
-    this.registry.set("endless", this.endless);
+    this.registry.set("arcade", this.arcade);
     this.registry.set("score", this.score);
     this.registry.set("lives", this.lives);
     this.load.bitmapFont(
@@ -337,7 +337,7 @@ This method is called every 100ms and it is used to update the score and show it
   updateScore() {
     this.score ++;
 
-    if (this.score === 30 && !this.endless) { this.finishScene() }
+    if (this.score === 30 && this.arcade) { this.finishScene() }
 
     switch (this.score) {
       case 5:
